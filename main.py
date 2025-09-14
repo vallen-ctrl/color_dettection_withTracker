@@ -1,11 +1,14 @@
 import cv2
 import numpy
 import write
+import time
 
 def noting(x):
     pass
 
 def main():
+    isgreen = False
+    detectGreen = False
     cap = cv2.VideoCapture(0);
     cv2.namedWindow("me")
     if not cap.isOpened():
@@ -29,7 +32,7 @@ def main():
     cv2.setTrackbarPos("H_low", "me", HSV_lower[0])
     cv2.setTrackbarPos("S_low", "me", HSV_lower[1])
     cv2.setTrackbarPos("V_low", "me", HSV_lower[2])
-
+    b = 1;
     while True:
         ret, frame = cap.read()
         if not ret:
@@ -37,7 +40,6 @@ def main():
             break
 
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        cv2.imshow("me", hsv);
 
         h_up = cv2.getTrackbarPos("H_up", "me")
         s_up = cv2.getTrackbarPos("S_up", "me")
@@ -53,16 +55,23 @@ def main():
         mask = cv2.inRange(frame, hsv_lower, hsv_upper)
         result = cv2.bitwise_and(frame, frame, mask=mask);
 
-        if cv2.countNonZero(mask) > 0:
-            #write your code here if the color detec
+        if cv2.countNonZero(mask) > 20:
+            detectGreen = True;
             pass
+        else:
+            detectGreen = False
         
+        if(detectGreen != isgreen):
+            isgreen = detectGreen
+            print(f"terdeteksi warna hijau: {isgreen}")
+            b+=1
+        cv2.imshow("me", frame);
         cv2.imshow("mask", mask);
         cv2.imshow("result", result);
         
         if cv2.waitKey(1) & 0xff == ord("q"):
             break
-    
+        time.sleep(0.1)
     write.writeCFG([h_up,s_up,v_up], [h_low,s_low,v_low])
     cap.release()
     cv2.destroyAllWindows()
