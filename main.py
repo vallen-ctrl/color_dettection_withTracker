@@ -2,18 +2,18 @@ import cv2
 import numpy
 import write
 import time
+import urllib.request
+
 
 def noting(x):
     pass
 
 def main():
+    url = "http://10.183.179.34/cam-mid.jpg"
     isgreen = False
     detectGreen = False
-    cap = cv2.VideoCapture(0);
+
     cv2.namedWindow("me")
-    if not cap.isOpened():
-        print("Cannot open camera")
-        exit()
 
     cv2.createTrackbar("H_up", "me", 0, 255, noting)
     cv2.createTrackbar("S_up", "me", 0, 255, noting)
@@ -34,10 +34,10 @@ def main():
     cv2.setTrackbarPos("V_low", "me", HSV_lower[2])
     b = 1;
     while True:
-        ret, frame = cap.read()
-        if not ret:
-            print("kesalahan dalam membaca")
-            break
+        imageRes = urllib.request.urlopen(url)
+        image_np = numpy.array(bytearray(imageRes.read()), dtype=numpy.uint8)
+
+        frame = cv2.imdecode(image_np, -1)
 
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
@@ -50,12 +50,12 @@ def main():
         v_low = cv2.getTrackbarPos("V_low", "me")
 
         hsv_upper = numpy.array([h_up,s_up, v_up])
-        hsv_lower = numpy.array([h_up, s_low, v_low])
+        hsv_lower = numpy.array([h_low, s_low, v_low])
 
         mask = cv2.inRange(frame, hsv_lower, hsv_upper)
         result = cv2.bitwise_and(frame, frame, mask=mask);
 
-        if cv2.countNonZero(mask) > 20:
+        if cv2.countNonZero(mask) >15:
             detectGreen = True;
             pass
         else:
@@ -71,9 +71,8 @@ def main():
         
         if cv2.waitKey(1) & 0xff == ord("q"):
             break
-        time.sleep(0.1)
+    
     write.writeCFG([h_up,s_up,v_up], [h_low,s_low,v_low])
-    cap.release()
     cv2.destroyAllWindows()
 if __name__ == "__main__":
     main()
