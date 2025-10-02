@@ -9,7 +9,8 @@ def noting(x):
     pass
 
 def main():
-    url = "http://10.183.179.34/cam-mid.jpg"
+    url = "http://10.24.107.34/cam-lo.jpg"
+    url_req = "http://10.24.107.34/isgreen?state="
     isgreen = False
     detectGreen = False
 
@@ -64,6 +65,12 @@ def main():
         if(detectGreen != isgreen):
             isgreen = detectGreen
             print(f"terdeteksi warna hijau: {isgreen}")
+
+            try:
+                urllib.request.urlopen(f"{url_req+str(isgreen)}")
+            except:
+                print("Eror while geting url, please chek your url")
+
             b+=1
         cv2.imshow("me", frame);
         cv2.imshow("mask", mask);
